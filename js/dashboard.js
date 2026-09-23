@@ -27,7 +27,7 @@
   function currentFilters() {
     const p = new URLSearchParams();
     const branch = $('filterBranch').value;
-    if (branch && (me.role === 'ceo' || branch === String(me.branch_id))) p.set('branch_id', branch);
+    if (branch && (me.role !== 'manager' || branch === String(me.branch_id))) p.set('branch_id', branch);
     if ($('filterType').value) p.set('type', $('filterType').value);
     if ($('filterCategory').value) p.set('category', $('filterCategory').value);
     if ($('filterStatus').value) p.set('status', $('filterStatus').value);
@@ -257,7 +257,7 @@
     }
 
     $('userName').textContent = me.name;
-    $('userRole').textContent = me.role === 'ceo' ? 'CEO / Head office' : 'Branch manager';
+    $('userRole').textContent = { ceo: 'CEO / Head office', supervisor: 'Supervisor', manager: 'Branch manager' }[me.role] || me.role;
     if (me.role === 'ceo') $('staffTabBtn').style.display = '';
 
     branches = await api('/api/branches');
