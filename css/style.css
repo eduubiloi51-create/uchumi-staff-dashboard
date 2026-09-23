@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --husk: #fffbfb;
+  --husk-deep: #fff0f1;
+  --loam: #ff000e;
+  --loam-dark: #c40010;
+  --amber: #1a1a1a;
+  --amber-deep: #000000;
+  --ink: #1a1a1a;
+  --ink-soft: #6b6b6b;
+  --surface: #ffffff;
+  --sage: #ffe3e5;
+  --clay: #ff000e;
+  --clay-soft: #ffe1e3;
+  --line: #ececec;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 12px 28px -14px rgba(26, 26, 26, 0.22);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+body {
+  margin: 0;
+  background: var(--husk);
+  color: var(--ink);
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+h1, h2, h3, .display {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--loam);
+}
+
+a { color: var(--loam); }
+
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85em 1.6em;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--loam); color: var(--husk); }
+.btn-primary:hover { background: var(--loam-dark); }
+.btn-primary:disabled { background: #a9b6ac; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--loam); border: 1.5px solid var(--line); }
+.btn-ghost:hover { border-color: var(--loam); }
+.btn-sm { padding: 0.5em 1em; font-size: 0.85rem; }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink);
+  margin-bottom: 0.5em;
+}
+
+.text-input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.8em 0.9em;
+  background: var(--surface);
+  color: var(--ink);
+}
+.text-input:focus, select.text-input:focus, textarea.text-input:focus {
+  outline: none;
+  border-color: var(--loam);
+  box-shadow: 0 0 0 3px rgba(43, 74, 52, 0.15);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 0.75em;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.badge-new { background: var(--clay-soft); color: var(--clay); }
+.badge-in_review { background: var(--line); color: var(--ink); }
+.badge-resolved { background: var(--ink); color: var(--husk); }
+
+.badge-compliment { background: var(--line); color: var(--ink); }
+.badge-complaint { background: var(--clay-soft); color: var(--clay); }
+.badge-suggestion { background: var(--line); color: var(--ink); }
+
+::selection { background: var(--amber); color: var(--ink); }
+
+:focus-visible { outline: 2.5px solid var(--amber-deep); outline-offset: 2px; }

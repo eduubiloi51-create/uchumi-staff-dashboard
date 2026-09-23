@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Feedback Dashboard — Uchumi</title>
+<link rel="stylesheet" href="/css/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  body { background: var(--husk-deep); }
+  .shell { max-width: 1180px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+
+  header.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .brandmark { display: flex; align-items: center; }
+  .brandmark img { height: 30px; width: auto; }
+  .brandmark .suffix { margin-left: 0.6rem; font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem; color: var(--ink); }
+  .who { display: flex; align-items: center; gap: 0.9rem; }
+  .who .name { font-weight: 600; font-size: 0.92rem; }
+  .who .role { font-size: 0.78rem; color: var(--ink-soft); text-transform: capitalize; }
+
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tabs button {
+    padding: 0.6em 1.1em; border-radius: 999px; border: 1.5px solid var(--line);
+    background: var(--surface); font-weight: 600; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer;
+  }
+  .tabs button.active { background: var(--loam); border-color: var(--loam); color: var(--husk); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 1rem;
+  }
+  .filters select, .filters input { padding: 0.55em 0.75em; border-radius: var(--radius-sm); border: 1.5px solid var(--line); background: var(--husk); min-width: 130px; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .kpi { padding: 1.25rem; }
+  .kpi .label { font-size: 0.78rem; color: var(--ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+  .kpi .value { font-family: 'Fraunces', serif; font-size: 2rem; color: var(--loam); margin-top: 0.3rem; }
+  .kpi.alert .value { color: var(--clay); }
+
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem; }
+  .chart-card { padding: 1.25rem; }
+  .chart-card h3 { font-size: 0.95rem; margin-bottom: 0.9rem; }
+  .chart-card canvas { max-height: 240px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+  th, td { text-align: left; padding: 0.75em 0.6em; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); }
+  td.msg { max-width: 320px; }
+  .price-note { margin-top: 0.4em; font-size: 0.78rem; font-weight: 600; color: var(--loam); }
+  .table-card { padding: 0.5rem 1rem 1rem; overflow-x: auto; }
+  .table-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0.5rem 0.5rem; }
+  .status-select { border-radius: var(--radius-sm); border: 1.5px solid var(--line); padding: 0.35em 0.5em; font-size: 0.8rem; }
+  .pager { display: flex; gap: 0.5rem; justify-content: flex-end; padding: 1rem 0.5rem 0.25rem; align-items: center; font-size: 0.85rem; color: var(--ink-soft); }
+
+  .staff-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; align-items: start; }
+  .staff-form { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .staff-form input, .staff-form select { padding: 0.7em 0.85em; border-radius: var(--radius-sm); border: 1.5px solid var(--line); }
+  .staff-list-card { padding: 0.5rem 1rem 1rem; }
+  .staff-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7em 0.25em; border-bottom: 1px solid var(--line); font-size: 0.88rem; }
+  .staff-row .meta { color: var(--ink-soft); font-size: 0.78rem; }
+
+  .qr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+  .qr-card { padding: 1.25rem; text-align: center; }
+  .qr-card img { width: 100%; max-width: 220px; border-radius: var(--radius-sm); border: 1px solid var(--line); margin: 0.75rem 0; }
+  .qr-card .addr { font-size: 0.82rem; color: var(--ink-soft); }
+
+  .empty-state { text-align: center; padding: 2rem 1rem; color: var(--ink-soft); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brandmark"><img src="/img/logo.png" alt="Uchumi — Home Of Value" /><span class="suffix">Feedback</span></div>
+      <div class="who">
+        <div>
+          <div class="name" id="userName">—</div>
+          <div class="role" id="userRole">—</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-panel="overview">Overview</button>
+      <button class="tab-btn" data-panel="feedback">All feedback</button>
+      <button class="tab-btn" data-panel="qr">QR codes</button>
+      <button class="tab-btn" data-panel="staff" id="staffTabBtn" style="display:none;">Staff accounts</button>
+    </div>
+
+    <div class="filters" id="filters">
+      <select id="filterBranch"><option value="all">All branches</option></select>
+      <select id="filterType">
+        <option value="">Any type</option>
+        <option value="compliment">Compliment</option>
+        <option value="complaint">Complaint</option>
+        <option value="suggestion">Suggestion</option>
+      </select>
+      <select id="filterCategory">
+        <option value="">Any category</option>
+        <option>Checkout speed</option>
+        <option>Product availability</option>
+        <option>Staff friendliness</option>
+        <option>Cleanliness &amp; hygiene</option>
+        <option>Pricing</option>
+        <option>Other</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">Any status</option>
+        <option value="new">New</option>
+        <option value="in_review">In review</option>
+        <option value="resolved">Resolved</option>
+      </select>
+      <input type="date" id="filterFrom" title="From date" />
+      <input type="date" id="filterTo" title="To date" />
+      <button class="btn btn-ghost btn-sm" id="exportBtn">Export CSV</button>
+    </div>
+
+    <section class="panel active" id="panel-overview">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="charts-grid">
+        <div class="card chart-card"><h3>Rating distribution</h3><canvas id="ratingChart"></canvas></div>
+        <div class="card chart-card"><h3>Feedback by category</h3><canvas id="categoryChart"></canvas></div>
+        <div class="card chart-card"><h3>Feedback over time (30 days)</h3><canvas id="trendChart"></canvas></div>
+        <div class="card chart-card"><h3>By branch</h3><canvas id="branchChart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-feedback">
+      <div class="card table-card">
+        <div class="table-header">
+          <strong id="resultCount">—</strong>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Branch</th><th>Rating</th><th>Type</th><th>Category</th>
+              <th>Message</th><th>Contact</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackBody"></tbody>
+        </table>
+        <div class="pager">
+          <button class="btn btn-ghost btn-sm" id="prevPage">Prev</button>
+          <span id="pageLabel">Page 1</span>
+          <button class="btn btn-ghost btn-sm" id="nextPage">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-qr">
+      <p style="color:var(--ink-soft); margin-bottom:1rem; max-width:60ch;">
+        Print one of these and place it at the checkout, entrance, or on tables. Scanning it opens the
+        feedback form with that branch already selected.
+      </p>
+      <div class="qr-grid" id="qrGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-staff">
+      <div class="staff-grid">
+        <div class="card staff-form">
+          <h3 style="font-family:'Fraunces',serif;">Add a staff account</h3>
+          <div class="error-banner" id="staffError"></div>
+          <input type="text" id="staffName" placeholder="Full name" />
+          <input type="email" id="staffEmail" placeholder="Email" />
+          <input type="password" id="staffPassword" placeholder="Temporary password (min 8 chars)" />
+          <select id="staffRole">
+            <option value="manager">Manager</option>
+            <option value="ceo">CEO / Head office</option>
+          </select>
+          <select id="staffBranch"></select>
+          <button class="btn btn-primary" id="addStaffBtn">Create account</button>
+        </div>
+        <div class="card staff-list-card">
+          <h3 style="font-family:'Fraunces',serif; padding-top:1rem;">Current staff</h3>
+          <div id="staffList"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

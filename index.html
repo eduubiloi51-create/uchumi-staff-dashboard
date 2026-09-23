@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Staff Sign In — Uchumi Feedback</title>
+<link rel="stylesheet" href="/css/style.css" />
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+  .login-card { width: 100%; max-width: 380px; padding: 2.25rem 1.75rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .brandmark { display: flex; justify-content: center; margin-bottom: 0.5rem; }
+  .brandmark img { height: 34px; width: auto; }
+  h1 { font-size: 1.25rem; text-align: center; margin-top: 0.25rem; }
+  .sub { text-align: center; color: var(--ink-soft); font-size: 0.9rem; margin-top: -0.5rem; }
+  .error-banner { background: var(--clay-soft); color: var(--clay); border-radius: var(--radius-sm); padding: 0.75em 1em; font-size: 0.85rem; display: none; }
+  .error-banner.show { display: block; }
+</style>
+</head>
+<body>
+  <form class="card login-card" id="loginForm">
+    <div>
+      <div class="brandmark"><img src="/img/logo.png" alt="Uchumi — Home Of Value" /></div>
+      <h1>Staff sign in</h1>
+      <p class="sub">Feedback dashboard access for managers and head office</p>
+    </div>
+
+    <div class="error-banner" id="errorBanner"></div>
+
+    <div>
+      <label class="field-label" for="email">Email</label>
+      <input class="text-input" id="email" type="email" required autocomplete="username" />
+    </div>
+    <div>
+      <label class="field-label" for="password">Password</label>
+      <input class="text-input" id="password" type="password" required autocomplete="current-password" />
+    </div>
+
+    <button class="btn btn-primary" type="submit" id="submitBtn">Sign in</button>
+  </form>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>
