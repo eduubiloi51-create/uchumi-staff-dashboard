@@ -5,4 +5,4 @@
 //   window.UCHUMI_API_BASE = 'https://uchumi-feedback-api.onrender.com';
 //
 // and make sure that backend's ALLOWED_ORIGINS includes this site's URL.
-window.UCHUMI_API_BASE = 'https://REPLACE-WITH-YOUR-BACKEND-URL.onrender.com';
+window.UCHUMI_API_BASE = 'https://uchumi-backend-lwul.onrender.com';
