@@ -59,7 +59,7 @@
     const stats = await api(`/api/dashboard/stats?${currentFilters()}`);
 
     $('kpiGrid').innerHTML = `
-      <div class="card kpi"><div class="label">Total feedback</div><div class="value">${stats.total}</div></div>
+      <div class="card kpi" id="kpiTotalCard"><div class="label">Total feedback</div><div class="value">${stats.total}</div></div>
       <div class="card kpi"><div class="label">Average rating</div><div class="value">${stats.avg_rating ?? '—'}${stats.avg_rating ? ' / 5' : ''}</div></div>
       <div class="card kpi"><div class="label">Complaints</div><div class="value">${stats.complaints}</div></div>
       <div class="card kpi ${stats.open_complaints > 0 ? 'alert' : ''}"><div class="label">Open complaints</div><div class="value">${stats.open_complaints}</div></div>
@@ -243,6 +243,86 @@
     $('staffBranch').style.display = $('staffRole').value === 'manager' ? '' : 'none';
   });
 
+  // ---------- Live updates: poll for new feedback, chime + toast ----------
+  let lastTotalSeen = null;
+  let soundOn = localStorage.getItem('uchumi_sound_on') !== 'off'; // default on
+  let audioCtx = null;
+
+  function updateSoundBtn() {
+    const btn = $('soundToggle');
+    if (!btn) return;
+    btn.textContent = soundOn ? '🔔 Sound on' : '🔕 Sound off';
+  }
+  updateSoundBtn();
+
+  $('soundToggle')?.addEventListener('click', () => {
+    soundOn = !soundOn;
+    localStorage.setItem('uchumi_sound_on', soundOn ? 'on' : 'off');
+    updateSoundBtn();
+    // A click is a user gesture — use it to "unlock" audio in browsers that
+    // block sound until the page has been interacted with.
+    if (soundOn) playChime();
+  });
+
+  function playChime() {
+    if (!soundOn) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      [880, 1318.5].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const start = now + i * 0.13;
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(start);
+        osc.stop(start + 0.42);
+      });
+    } catch { /* Web Audio unsupported — fail silently */ }
+  }
+
+  function showToast(text) {
+    const toast = $('liveToast');
+    if (!toast) return;
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  function pulseTotal() {
+    const card = $('kpiTotalCard');
+    if (!card) return;
+    card.classList.remove('pulse');
+    void card.offsetWidth; // restart animation
+    card.classList.add('pulse');
+  }
+
+  async function pollForNewFeedback() {
+    try {
+      // Unfiltered (beyond the user's own role-based scope) so this catches
+      // anything new regardless of whatever filters are currently applied
+      // to the visible table.
+      const stats = await api('/api/dashboard/stats');
+      if (lastTotalSeen !== null && stats.total > lastTotalSeen) {
+        const diff = stats.total - lastTotalSeen;
+        showToast(`${diff} new feedback ${diff === 1 ? 'entry' : 'entries'} just came in`);
+        playChime();
+        await refreshAll();
+        pulseTotal();
+      }
+      lastTotalSeen = stats.total;
+    } catch {
+      // Transient errors (e.g. a Render free-tier cold start) — just skip
+      // this cycle, the next poll will try again.
+    }
+  }
+
   // ---------- Bootstrap ----------
   $('logoutBtn').addEventListener('click', async () => {
     await api('/api/auth/logout', { method: 'POST' });
@@ -274,6 +354,13 @@
     }
 
     loadQr();
-    refreshAll();
+    await refreshAll();
+
+    // Establish the baseline for "new since now", then start polling.
+    try {
+      const baseline = await api('/api/dashboard/stats');
+      lastTotalSeen = baseline.total;
+    } catch { /* first poll will just set it instead */ }
+    setInterval(pollForNewFeedback, 15000);
   })();
 })();
