@@ -71,6 +71,17 @@
   .qr-card .addr { font-size: 0.82rem; color: var(--ink-soft); }
 
   .empty-state { text-align: center; padding: 2rem 1rem; color: var(--ink-soft); font-size: 0.9rem; }
+
+  .live-toast {
+    position: fixed; top: 1rem; right: 1rem; z-index: 50;
+    background: var(--ink); color: var(--husk); padding: 0.75em 1.2em; border-radius: 999px;
+    font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(-10px); pointer-events: none; transition: all 0.25s ease;
+  }
+  .live-toast.show { opacity: 1; transform: translateY(0); }
+
+  @keyframes pulseKpi { 0% { transform: scale(1); } 30% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  .kpi.pulse .value { animation: pulseKpi 0.5s ease; color: var(--loam) !important; }
 </style>
 </head>
 <body>
@@ -82,9 +93,12 @@
           <div class="name" id="userName">—</div>
           <div class="role" id="userRole">—</div>
         </div>
+        <button class="btn btn-ghost btn-sm" id="soundToggle" title="Toggle new-feedback sound">🔔 Sound on</button>
         <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
       </div>
     </header>
+
+    <div id="liveToast" class="live-toast"></div>
 
     <div class="tabs">
       <button class="tab-btn active" data-panel="overview">Overview</button>
